@@ -1,0 +1,29 @@
+### GET ALL PAGES
+http://localhost:3000/api/pages
+
+### GET PAGE BY ID
+http://localhost:3000/api/pages/66d51354f4a34fd60b5396bb
+
+
+### POST PAGE 
+POST http://localhost:3000/api/pages
+Content-type: application/json
+
+{
+  "name": "About teste",
+  "body": "About teste"
+
+}
+
+### PUT PAGE BY ID
+PUT http://localhost:3000/api/pages/66d5231323169573af353c2f
+Content-type: application/json
+
+{
+  "name": "Test page UDPATED"
+
+}
+
+
+### DELETE PAGE BY ID
+DELETE http://localhost:3000/api/pages/66d5231323169573af353c2f

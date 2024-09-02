@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "nodemon ./bin/www",
+    "seed:create": "node ./src/seeds/index.js",
+    "seed:destroy": "node ./src/seeds/index.js -d"
   },
   "dependencies": {
     "backend-shirts-and-fruit": "file:",

@@ -3,14 +3,15 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 
-const dbConnect = require("./db/index");
+const dbConnect = require("./src/db/index.js");
 
 require("dotenv").config();
 
 dbConnect();
 
-var indexRouter = require("./src/routes/index");
-var usersRouter = require("./src/routes/users");
+const categoriesRouter = require("./src/routes/categories.js");
+const productsRouter = require("./src/routes/products.js");
+const pagesRouter = require("./src/routes/pages.js");
 
 var app = express();
 
@@ -20,7 +21,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/", indexRouter);
-app.use("/users", usersRouter);
+app.use("/api/categories", categoriesRouter);
+app.use("/api/products", productsRouter);
+app.use("/api/pages", pagesRouter);
 
 module.exports = app;

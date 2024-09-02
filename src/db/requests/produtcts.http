@@ -1,0 +1,30 @@
+### GET ALL PRODUCTS
+http://localhost:3000/api/products
+
+### GET PRODUCT BY ID
+http://localhost:3000/api/products/66d51354f4a34fd60b5396b5
+
+
+### POST PRODUCT 
+POST http://localhost:3000/api/products
+Content-type: application/json
+
+{
+  "name": "Test Product",
+  "description": "Test Description",
+  "price": 5.99,
+  "category": "fruit"
+}
+
+### PUT PRODUCT BY ID
+PUT http://localhost:3000/api/products/66d51d5e84fb03ee3566bdfb
+Content-type: application/json
+
+{
+  "name": "Test Product UDPATED"
+
+}
+
+
+### DELETE PRODUCT BY ID
+DELETE http://localhost:3000/api/products/66d51d5e84fb03ee3566bdfb
