@@ -1,0 +1,19 @@
+### POST LOGIN USER
+POST http://localhost:3000/api/users/login
+Content-Type: application/json
+{
+  "email": "admin@gmail.com",
+  "password": "12345"
+  
+}
+### POST REGISTER USER
+POST http://localhost:3000/api/users/register
+Content-Type: application/json
+{
+  "name": "Victor",
+  "email": "victor@gmail.com",
+  "password": "12345"
+}
+
+### POST LOGOUT USER
+POST http://localhost:3000/api/users/logout

@@ -58,5 +58,19 @@ router.delete("/:id", async function (req, res, next) {
     res.status(500).json({ message: error.message });
   }
 });
+/* GET /api/products/categories/:slug */
+router.get("/categories/:slug", async function (req, res, next) {
+  const slug = req.params.slug;
+  try {
+    const products =
+      slug === "all"
+        ? await Product.find({})
+        : await Product.find({ category: slug });
+
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 module.exports = router;

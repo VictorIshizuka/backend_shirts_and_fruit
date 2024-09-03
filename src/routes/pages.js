@@ -12,10 +12,11 @@ router.get("/", async function (req, res, next) {
     res.status(500).json({ message: error.message });
   }
 });
-/* GET /api/pages/:id */
-router.get("/:id", async function (req, res, next) {
+/* GET /api/pages/:slug */
+router.get("/:slug", async function (req, res, next) {
   try {
-    const page = await Page.findById(req.params.id);
+    const slug = req.params.slug || "home";
+    const page = await Page.findOne({ slug });
     if (!page) {
       return res.status(404).json({ message: "Page not found" });
     }
