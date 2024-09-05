@@ -6,7 +6,7 @@ const Page = require("../models/page.js");
 /* GET /api/pages */
 router.get("/", async function (req, res, next) {
   try {
-    const pages = await Page.find({});
+    const pages = await Page.find({}).sort("order");
     res.status(200).json(pages);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -58,5 +58,18 @@ router.delete("/:id", async function (req, res, next) {
     res.status(500).json({ message: error.message });
   }
 });
+/* POST /api/pages/reorder */
+router.post("/reorder", async function (req, res, next) {
+  const idArray = req.body;
 
+  try {
+    for (let i = 0; i < idArray.length; i++) {
+      const id = idArray[i];
+      await Page.findByIdAndUpdate({ _id: id }, { order: i });
+    }
+    res.status(200).json({ message: "Pages reordered!" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 module.exports = router;

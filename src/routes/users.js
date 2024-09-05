@@ -18,7 +18,11 @@ router.post("/login", async function (req, res, next) {
       secure: process.env.NODE_ENV === "production",
       maxAge: 8640000,
     });
-    res.status(200).json({ _id: foundUser._id, name: foundUser.name });
+    res.status(200).json({
+      _id: foundUser._id,
+      username: foundUser.username,
+      isAdmin: foundUser.isAdmin,
+    });
   } else {
     res.status(401).json({ message: "Invalid email or password" });
   }
@@ -43,6 +47,16 @@ router.post("/register", async function (req, res, next) {
 router.post("/logout", async function (req, res, next) {
   res.clearCookie("jwt");
   res.status(200).json({ message: "You have successfully logged out" });
+});
+
+// GET /api/users
+router.get("/", async function (req, res, next) {
+  try {
+    const users = await User.find({});
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(401).json(error.message);
+  }
 });
 
 module.exports = router;
