@@ -2,6 +2,7 @@ var express = require("express");
 var router = express.Router();
 
 const Page = require("../models/page.js");
+const { loggedIn, admin } = require("../middleware/auth.js");
 
 /* GET /api/pages */
 router.get("/", async function (req, res, next) {
@@ -17,7 +18,6 @@ router.get("/:slug", async function (req, res, next) {
   try {
     const slug = req.params.slug || "home";
     const page = await Page.findOne({ slug });
-    console.log(page);
     if (!page) {
       return res.status(404).json({ message: "Page not found" });
     }
@@ -27,7 +27,7 @@ router.get("/:slug", async function (req, res, next) {
   }
 });
 /* POST /api/pages */
-router.post("/", async function (req, res, next) {
+router.post("/", loggedIn, admin, async function (req, res, next) {
   try {
     req.body.slug = req.body.name.toLowerCase().trim().replace(/ /g, "-");
 
@@ -39,7 +39,7 @@ router.post("/", async function (req, res, next) {
   }
 });
 /* PUT /api/pages/:id */
-router.put("/:id", async function (req, res, next) {
+router.put("/:id", loggedIn, admin, async function (req, res, next) {
   try {
     req.body.slug = req.body.name.toLowerCase().trim().replace(/ /g, "-");
     await Page.findByIdAndUpdate(req.params.id, req.body);
@@ -49,7 +49,7 @@ router.put("/:id", async function (req, res, next) {
   }
 });
 /* DELETE /api/pages/:id */
-router.delete("/:id", async function (req, res, next) {
+router.delete("/:id", loggedIn, admin, async function (req, res, next) {
   try {
     await Page.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: "Page deleted!" });
@@ -58,7 +58,7 @@ router.delete("/:id", async function (req, res, next) {
   }
 });
 /* POST /api/pages/reorder */
-router.post("/reorder", async function (req, res, next) {
+router.post("/reorder", loggedIn, admin, async function (req, res, next) {
   const idArray = req.body;
 
   try {

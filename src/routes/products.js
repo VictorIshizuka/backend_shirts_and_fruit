@@ -3,6 +3,7 @@ var router = express.Router();
 const fs = require("fs");
 const multer = require("multer");
 const Product = require("../models/product.js");
+const { loggedIn, admin } = require("../middleware/auth.js");
 
 /* GET /api/products */
 router.get("/", async function (req, res, next) {
@@ -41,52 +42,64 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 /* POST /api/products */
-router.post("/", upload.single("image"), async function (req, res, next) {
-  try {
-    req.body.slug = req.body.name.toLowerCase().trim().replace(/ /g, "-");
-    req.body.image = req.file ? req.file.filename : "noimage.jpg";
+router.post(
+  "/",
+  upload.single("image"),
+  loggedIn,
+  admin,
+  async function (req, res, next) {
+    try {
+      req.body.slug = req.body.name.toLowerCase().trim().replace(/ /g, "-");
+      req.body.image = req.file ? req.file.filename : "noimage.jpg";
 
-    const newProduct = await Product.create(req.body);
+      const newProduct = await Product.create(req.body);
 
-    const folderPath = `../../frontend/frontend_shirts_and_fruit/public/galley/${newProduct._id}`;
+      const folderPath = `../../frontend/frontend_shirts_and_fruit/public/galley/${newProduct._id}`;
 
-    if (!fs.existsSync(folderPath)) {
-      fs.mkdirSync(folderPath, { recursive: true });
+      if (!fs.existsSync(folderPath)) {
+        fs.mkdirSync(folderPath, { recursive: true });
+      }
+
+      res.status(201).json({ message: "Product created" });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
-
-    res.status(201).json({ message: "Product created" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
   }
-});
+);
 
 /* PUT /api/products/:id */
-router.put("/:id", upload.single("image"), async function (req, res, next) {
-  try {
-    req.body.slug = req.body.name.toLowerCase().trim().replace(/ /g, "-");
-    req.body.image = req.file ? req.file.filename : req.body.productImage;
+router.put(
+  "/:id",
+  upload.single("image"),
+  loggedIn,
+  admin,
+  async function (req, res, next) {
+    try {
+      req.body.slug = req.body.name.toLowerCase().trim().replace(/ /g, "-");
+      req.body.image = req.file ? req.file.filename : req.body.productImage;
 
-    await Product.findByIdAndUpdate(req.params.id, req.body);
+      await Product.findByIdAndUpdate(req.params.id, req.body);
 
-    const oldProductImage = req.file ? req.body.productImage : null;
+      const oldProductImage = req.file ? req.body.productImage : null;
 
-    if (oldProductImage && oldProductImage !== "noimage.jpg") {
-      const imagePath = `../../frontend/frontend_shirts_and_fruit/public/images/${oldProductImage}`;
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      } else {
-        console.log("File not found");
+      if (oldProductImage && oldProductImage !== "noimage.jpg") {
+        const imagePath = `../../frontend/frontend_shirts_and_fruit/public/images/${oldProductImage}`;
+        if (fs.existsSync(imagePath)) {
+          fs.unlinkSync(imagePath);
+        } else {
+          console.log("File not found");
+        }
       }
-    }
 
-    res.status(200).json({ message: "Product updated!" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+      res.status(200).json({ message: "Product updated!" });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
   }
-});
+);
 
 /* POST /api/products/:id */
-router.post("/:id", async function (req, res, next) {
+router.post("/:id", loggedIn, admin, async function (req, res, next) {
   const product = await Product.findById(req.params.id);
   const image = product.image;
   try {
@@ -133,6 +146,8 @@ router.get("/categories/:slug", async function (req, res, next) {
 router.post(
   "/multiupload/:id",
   upload.array("images"),
+  loggedIn,
+  admin,
   async function (req, res) {
     const id = req.params.id;
     const folderPath = `../../frontend/frontend_shirts_and_fruit/public/gallery/${id}`;
@@ -163,7 +178,7 @@ router.post(
 );
 
 //GET /api/products/images/:id
-router.get("/images/:id", async function (req, res) {
+router.get("/images/:id", loggedIn, admin, async function (req, res) {
   const id = req.params.id;
   const folderPath = `../../frontend/frontend_shirts_and_fruit/public/gallery/${id}`;
   if (!fs.existsSync(folderPath)) {
@@ -178,7 +193,7 @@ router.get("/images/:id", async function (req, res) {
 });
 
 //POST /api/products/deleteimage
-router.post("/deleteimage", function (req, res) {
+router.post("/deleteimage", loggedIn, admin, function (req, res) {
   const { id, image } = req.body;
   const imagePath = `../../frontend/frontend_shirts_and_fruit/public/gallery/${id}/${image}`;
   if (fs.existsSync(imagePath)) {
