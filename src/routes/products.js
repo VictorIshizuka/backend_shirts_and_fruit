@@ -178,7 +178,7 @@ router.post(
 );
 
 //GET /api/products/images/:id
-router.get("/images/:id", loggedIn, admin, async function (req, res) {
+router.get("/images/:id", async function (req, res) {
   const id = req.params.id;
   const folderPath = `../../frontend/frontend_shirts_and_fruit/public/gallery/${id}`;
   if (!fs.existsSync(folderPath)) {
