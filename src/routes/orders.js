@@ -6,7 +6,6 @@ const Order = require("../models/order");
 
 /* POST /api/order */
 router.post("/", loggedIn, async function (req, res, next) {
-  console.log(req.body);
   try {
     await Order.create(req.body);
     res.status(201).json({ message: "Order created!" });

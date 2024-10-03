@@ -7,6 +7,8 @@ const User = require("../../models/user.js");
 const Page = require("../../models/page.js");
 const Category = require("../../models/category.js");
 const Product = require("../../models/product.js");
+const Order = require("../../models/order.js");
+const Rating = require("../../models/rating.js");
 
 const users = require("./users.js");
 const pages = require("./pages.js");
@@ -21,9 +23,9 @@ dbConnect();
 const seedData = async () => {
   try {
     await Category.insertMany(categories);
-    const insertProduct = await Product.insertMany(products);
     await Page.insertMany(pages);
     await User.insertMany(users);
+    const insertProduct = await Product.insertMany(products);
     insertProduct.forEach(product => {
       const id = product._id.toString();
       const folderPath = `../../frontend/frontend_shirts_and_fruit/public/gallery/${id}`;
@@ -41,6 +43,8 @@ const destroyData = async () => {
     await Category.deleteMany({});
     await Page.deleteMany({});
     await User.deleteMany({});
+    await Order.deleteMany({});
+    await Rating.deleteMany({});
 
     const products = await Product.find({});
     products.forEach(product => {

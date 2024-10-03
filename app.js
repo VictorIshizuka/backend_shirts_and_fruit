@@ -14,6 +14,7 @@ const usersRouter = require("./src/routes/users.js");
 const categoriesRouter = require("./src/routes/categories.js");
 const productsRouter = require("./src/routes/products.js");
 const ordersRouter = require("./src/routes/orders.js");
+const ratingsRouter = require("./src/routes/ratings.js");
 
 var app = express();
 
@@ -29,5 +30,6 @@ app.use("/api/users", usersRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/products", productsRouter);
 app.use("/api/orders", ordersRouter);
+app.use("/api/ratings", ratingsRouter);
 
 module.exports = app;

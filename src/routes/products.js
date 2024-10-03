@@ -151,7 +151,6 @@ router.post(
   async function (req, res) {
     const id = req.params.id;
     const folderPath = `../../frontend/frontend_shirts_and_fruit/public/gallery/${id}`;
-    console.log(id);
     const storage = multer.diskStorage({
       destination: function (req, file, cb) {
         cb(
@@ -161,7 +160,6 @@ router.post(
         );
       },
       filename: function (req, file, cb) {
-        console.log({ file: file });
         cb(null, Date.now() + "-" + file.originalname);
       },
     });
