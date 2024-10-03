@@ -16,7 +16,7 @@ router.get("/", async function (req, res, next) {
 });
 
 /* GET /api/products/:id */
-router.get("/:id", async function (req, res, next) {
+router.get("/:id", async function (req, res) {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
@@ -30,31 +30,28 @@ router.get("/:id", async function (req, res, next) {
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(
-      null,
-      "/Estudo/frontend/shirts_and_fruit_full/frontend/frontend_shirts_and_fruit/public/images"
-    );
+    cb(null, "../../frontend/frontend_shirts_and_fruit/public/images");
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
   },
 });
-const upload = multer({ storage });
+const upload = multer({ storage: storage });
 
 /* POST /api/products */
 router.post(
   "/",
-  upload.single("image"),
   loggedIn,
   admin,
-  async function (req, res, next) {
+  upload.single("image"),
+  async function (req, res) {
     try {
       req.body.slug = req.body.name.toLowerCase().trim().replace(/ /g, "-");
       req.body.image = req.file ? req.file.filename : "noimage.jpg";
 
       const newProduct = await Product.create(req.body);
 
-      const folderPath = `../../frontend/frontend_shirts_and_fruit/public/galley/${newProduct._id}`;
+      const folderPath = `../../frontend/frontend_shirts_and_fruit/public/gallery/${newProduct._id}`;
 
       if (!fs.existsSync(folderPath)) {
         fs.mkdirSync(folderPath, { recursive: true });
@@ -70,10 +67,10 @@ router.post(
 /* PUT /api/products/:id */
 router.put(
   "/:id",
-  upload.single("image"),
   loggedIn,
   admin,
-  async function (req, res, next) {
+  upload.single("image"),
+  async function (req, res) {
     try {
       req.body.slug = req.body.name.toLowerCase().trim().replace(/ /g, "-");
       req.body.image = req.file ? req.file.filename : req.body.productImage;
@@ -127,16 +124,27 @@ router.post("/:id", loggedIn, admin, async function (req, res, next) {
   }
 });
 
-/* GET /api/products/categories/:slug */
-router.get("/categories/:slug", async function (req, res, next) {
+/* GET /api/products/category/:slug */
+router.get("/category/:slug", async function (req, res, next) {
   const slug = req.params.slug;
+  const page = req.query.page;
+  const pageSize = 5;
+
   try {
+    const query = slug === "all" ? {} : { category: slug };
+    const count = await Product.countDocuments(query);
     const products =
       slug === "all"
         ? await Product.find({})
-        : await Product.find({ category: slug });
+            .limit(pageSize)
+            .skip((page - 1) * pageSize)
+        : await Product.find({ category: slug })
+            .limit(pageSize)
+            .skip((page - 1) * pageSize);
 
-    res.status(200).json(products);
+    res
+      .status(200)
+      .json({ products, page, totalPages: Math.ceil(count / pageSize) });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -145,18 +153,18 @@ router.get("/categories/:slug", async function (req, res, next) {
 //POST /api/products/multiupload/:id
 router.post(
   "/multiupload/:id",
-  upload.array("images"),
+  // upload.array("images"),
   loggedIn,
   admin,
   async function (req, res) {
     const id = req.params.id;
     const folderPath = `../../frontend/frontend_shirts_and_fruit/public/gallery/${id}`;
+
     const storage = multer.diskStorage({
       destination: function (req, file, cb) {
         cb(
           null,
-          "/Estudo/frontend/shirts_and_fruit_full/frontend/frontend_shirts_and_fruit/public/gallery/" +
-            id
+          "../../frontend/frontend_shirts_and_fruit/public/gallery/" + id
         );
       },
       filename: function (req, file, cb) {
@@ -179,6 +187,7 @@ router.post(
 router.get("/images/:id", async function (req, res) {
   const id = req.params.id;
   const folderPath = `../../frontend/frontend_shirts_and_fruit/public/gallery/${id}`;
+
   if (!fs.existsSync(folderPath)) {
     return res.status(404).json({ message: "Folder not found" });
   }
@@ -196,7 +205,7 @@ router.post("/deleteimage", loggedIn, admin, function (req, res) {
   const imagePath = `../../frontend/frontend_shirts_and_fruit/public/gallery/${id}/${image}`;
   if (fs.existsSync(imagePath)) {
     fs.unlinkSync(imagePath);
-    return res.status(200).json({ message: "Image deleted successfully" });
+    res.status(200).json({ message: "Image deleted successfully" });
   } else {
     res.status(404).json({ message: "Image not found" });
   }
