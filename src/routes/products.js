@@ -96,7 +96,7 @@ router.put(
 );
 
 /* POST /api/products/:id */
-router.post("/:id", loggedIn, admin, async function (req, res, next) {
+router.delete("/:id", loggedIn, admin, async function (req, res, next) {
   const product = await Product.findById(req.params.id);
   const image = product.image;
   try {
@@ -151,37 +151,33 @@ router.get("/category/:slug", async function (req, res, next) {
 });
 
 //POST /api/products/multiupload/:id
-router.post(
-  "/multiupload/:id",
-  // upload.array("images"),
-  loggedIn,
-  admin,
-  async function (req, res) {
+const storageGallery = multer.diskStorage({
+  destination: function (req, file, cb) {
     const id = req.params.id;
     const folderPath = `../../frontend/frontend_shirts_and_fruit/public/gallery/${id}`;
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath, { recursive: true });
+    }
+    cb(null, folderPath);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
 
-    const storage = multer.diskStorage({
-      destination: function (req, file, cb) {
-        cb(
-          null,
-          "../../frontend/frontend_shirts_and_fruit/public/gallery/" + id
-        );
-      },
-      filename: function (req, file, cb) {
-        cb(null, Date.now() + "-" + file.originalname);
-      },
-    });
-    const upload = multer(storage);
+// Middleware do multer para múltiplos uploads
+const uploadMultiple = multer({ storage: storageGallery }).array("images", 10); // Limite de 10 imagens, ajuste conforme necessário
 
-    upload.array("images")(req, res, function (error) {
-      if (error) {
-        console.log({ error });
-        return res.status(500).json({ message: error.message });
-      }
-      res.status(200).json({ message: "Files uploaded successfully" });
-    });
-  }
-);
+// POST /api/products/multiupload/:id
+router.post("/multiupload/:id", loggedIn, admin, function (req, res) {
+  uploadMultiple(req, res, function (error) {
+    if (error) {
+      console.error("Upload error:", error);
+      return res.status(500).json({ message: "Error uploading files" });
+    }
+    res.status(200).json({ message: "Files uploaded successfully" });
+  });
+});
 
 //GET /api/products/images/:id
 router.get("/images/:id", async function (req, res) {
@@ -203,11 +199,17 @@ router.get("/images/:id", async function (req, res) {
 router.post("/deleteimage", loggedIn, admin, function (req, res) {
   const { id, image } = req.body;
   const imagePath = `../../frontend/frontend_shirts_and_fruit/public/gallery/${id}/${image}`;
-  if (fs.existsSync(imagePath)) {
-    fs.unlinkSync(imagePath);
-    res.status(200).json({ message: "Image deleted successfully" });
-  } else {
-    res.status(404).json({ message: "Image not found" });
+
+  try {
+    if (fs.existsSync(imagePath)) {
+      fs.unlinkSync(imagePath);
+      res.status(200).json({ message: "Image deleted successfully" });
+    } else {
+      res.status(404).json({ message: "Image not found" });
+    }
+  } catch (error) {
+    console.error("Error deleting image:", error);
+    res.status(500).json({ message: "Error deleting image" });
   }
 });
 
